@@ -1,9 +1,10 @@
-package com.example.wodozbior.utils;
+package com.example.wodozbior.service;
 
 import com.example.wodozbior.datastructures.Stacja;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -11,8 +12,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Vector;
 
-@Component
-public class ImgwApiFacade {
+@Service
+public class ImgwHydro1Service {
 
     @Value("${imgw.api.url}")
     private static String imgwApiUrl;
