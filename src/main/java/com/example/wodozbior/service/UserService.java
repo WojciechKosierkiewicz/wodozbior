@@ -1,7 +1,6 @@
 package com.example.wodozbior.service;
 
 import com.example.wodozbior.entity.User;
-import com.example.wodozbior.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
