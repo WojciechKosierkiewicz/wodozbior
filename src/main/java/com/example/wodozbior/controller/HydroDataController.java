@@ -3,6 +3,7 @@ package com.example.wodozbior.controller;
 import com.example.wodozbior.dto.hydrodata.*;
 import com.example.wodozbior.service.HydroServiceFacade;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -73,5 +74,11 @@ public class HydroDataController {
     public ResponseEntity<List<AlertDto>> getAlerts() {
         List<AlertDto> alerts = hydroServiceFacade.getCurrentAlerts();
         return ResponseEntity.ok(alerts);
+    }
+
+    @GetMapping("/rivers")
+    public ResponseEntity<List<Pair<String,List<StationBasicDto>>>> getRivers() {
+        List<Pair<String,List<StationBasicDto>>> rivers = hydroServiceFacade.getAllRivers();
+        return ResponseEntity.ok(rivers);
     }
 }
