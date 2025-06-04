@@ -1,7 +1,7 @@
 package com.example.wodozbior.entity;
 
 import jakarta.persistence.*;
-import org.springframework.data.annotation.Id;
+
 
 @Entity
 @Table(name = "voivodeships")
@@ -15,6 +15,11 @@ public class Voivodeship {
 
 
     public Voivodeship() {}
+
+    public Voivodeship(Integer id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 
     public Integer getId() {
         return id;

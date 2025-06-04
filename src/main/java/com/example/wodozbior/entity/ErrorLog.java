@@ -1,7 +1,7 @@
 package com.example.wodozbior.entity;
 
 import jakarta.persistence.*;
-import org.springframework.data.annotation.Id;
+
 
 import java.time.LocalDateTime;
 
@@ -23,6 +23,13 @@ public class ErrorLog {
     private LocalDateTime errorTime = LocalDateTime.now();
 
     public ErrorLog() {
+    }
+
+    public ErrorLog(Long id, String functionName, String errorMessage, LocalDateTime errorTime) {
+        this.id = id;
+        this.functionName = functionName;
+        this.errorMessage = errorMessage;
+        this.errorTime = errorTime;
     }
 
     public Long getId() {

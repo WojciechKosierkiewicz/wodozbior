@@ -1,7 +1,7 @@
 package com.example.wodozbior.entity;
 
 import jakarta.persistence.*;
-import org.springframework.data.annotation.Id;
+
 
 import java.time.LocalDateTime;
 
@@ -27,6 +27,18 @@ public class OtherMeasurement {
     private LocalDateTime overgrowthDate;
 
     public OtherMeasurement() {
+    }
+
+    public OtherMeasurement(Integer id, Station station, Float waterTemp, LocalDateTime waterTempDate,
+                            Integer icePhenomena, LocalDateTime icePhenomenaDate, Integer overgrowth, LocalDateTime overgrowthDate) {
+        this.id = id;
+        this.station = station;
+        this.waterTemp = waterTemp;
+        this.waterTempDate = waterTempDate;
+        this.icePhenomena = icePhenomena;
+        this.icePhenomenaDate = icePhenomenaDate;
+        this.overgrowth = overgrowth;
+        this.overgrowthDate = overgrowthDate;
     }
 
     public Integer getId() {

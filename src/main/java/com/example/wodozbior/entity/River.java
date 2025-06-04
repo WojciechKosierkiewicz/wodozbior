@@ -1,7 +1,7 @@
 package com.example.wodozbior.entity;
 
 import jakarta.persistence.*;
-import org.springframework.data.annotation.Id;
+
 
 @Entity
 @Table(name = "rivers")
@@ -14,6 +14,11 @@ public class River {
     private String name;
 
     public River (){}
+
+    public River(Integer id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 
     public Integer getId() {
         return id;

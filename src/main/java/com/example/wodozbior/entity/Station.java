@@ -1,7 +1,7 @@
 package com.example.wodozbior.entity;
 
 import jakarta.persistence.*;
-import org.springframework.data.annotation.Id;
+
 
 @Entity
 @Table(name = "stations")
@@ -25,6 +25,16 @@ public class Station {
     private Float longitude;
 
     public Station() {
+    }
+
+
+    public Station(Integer id, String name, River river, Voivodeship voivodeship, Float latitude, Float longitude) {
+        this.id = id;
+        this.name = name;
+        this.river = river;
+        this.voivodeship = voivodeship;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public Integer getId() {

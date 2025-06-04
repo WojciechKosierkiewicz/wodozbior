@@ -12,8 +12,5 @@ public class WodozbiorApplication {
     public static void main(String[] args) {
         SpringApplication.run(WodozbiorApplication.class, args);
     }
-    @GetMapping("/Test")
-    public String Test(){
-        return "Hello World";
-    }
+
 }

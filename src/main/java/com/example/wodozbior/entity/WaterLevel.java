@@ -1,7 +1,7 @@
 package com.example.wodozbior.entity;
 
 import jakarta.persistence.*;
-import org.springframework.data.annotation.Id;
+
 
 import java.time.LocalDateTime;
 
@@ -25,6 +25,15 @@ public class WaterLevel {
     private LocalDateTime flowDate;
 
     public WaterLevel() {
+    }
+
+    public WaterLevel(Integer id, Station station, Float level, LocalDateTime time, Float flowRate, LocalDateTime flowDate) {
+        this.id = id;
+        this.station = station;
+        this.level = level;
+        this.time = time;
+        this.flowRate = flowRate;
+        this.flowDate = flowDate;
     }
 
     public Integer getId() {
