@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface VoivodeshipRepository extends JpaRepository<Voivodeship, Integer> {
     Optional<Voivodeship> findByName(String name);
+
+    Optional<Voivodeship> findByNameIgnoreCase(String wojewodztwo);
 }

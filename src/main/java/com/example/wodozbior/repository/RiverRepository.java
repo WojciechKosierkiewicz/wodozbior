@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface RiverRepository extends JpaRepository<River, Integer> {
     Optional<River> findByName(String name);
+
+    Optional<River> findByNameIgnoreCase(String rzeka);
 }
