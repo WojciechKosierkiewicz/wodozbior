@@ -3,10 +3,12 @@ package com.example.wodozbior.service;
 import com.example.wodozbior.dto.hydrodata.HydroStationFullDto;
 import com.example.wodozbior.entity.*;
 import com.example.wodozbior.repository.*;
-import jakarta.transaction.Transactional;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class HydroDatabaseSaveService {
@@ -29,61 +31,69 @@ public class HydroDatabaseSaveService {
         this.otherMeasurementRepo = otherMeasurementRepo;
     }
 
-    @Transactional
-    public void saveAll(List<HydroStationFullDto> dtos) {
-        for (HydroStationFullDto dto : dtos) {
-            River river = riverRepo.findByName(dto.getRiver())
-                    .orElseGet(() -> riverRepo.save(new River(null, dto.getRiver())));
+    @Async
+    public CompletableFuture<Void> saveAllAsync(List<HydroStationFullDto> dtos) {
+        try {
+            for (HydroStationFullDto dto : dtos) {
 
-            Voivodeship voivodeship = voivodeshipRepo.findByName(dto.getVoivodeship())
-                    .orElseGet(() -> voivodeshipRepo.save(new Voivodeship(null, dto.getVoivodeship())));
+                River river = riverRepo.findByName(dto.getRiver())
+                        .orElseGet(() -> riverRepo.save(new River(null, dto.getRiver())));
 
-            Station station = stationRepo.findByName(dto.getStationName())
-                    .orElseGet(() -> {
-                        Station s = new Station();
-                        s.setName(dto.getStationName());
-                        s.setRiver(river);
-                        s.setVoivodeship(voivodeship);
-                        s.setLatitude(dto.getLat());
-                        s.setLongitude(dto.getLon());
-                        return stationRepo.save(s);
-                    });
+                Voivodeship voivodeship = voivodeshipRepo.findByName(dto.getVoivodeship())
+                        .orElseGet(() -> voivodeshipRepo.save(new Voivodeship(null, dto.getVoivodeship())));
 
-            for (HydroStationFullDto.MeasurementDto m : dto.getMeasurements()) {
-                if (m.getWaterLevel() != null && m.getWaterLevelDate() != null) {
-                    boolean exists = waterLevelRepo.existsByStationAndTime(station, m.getWaterLevelDate());
-                    if (!exists) {
-                        WaterLevel wl = new WaterLevel();
-                        wl.setStation(station);
-                        wl.setLevel(m.getWaterLevel().floatValue());
-                        wl.setTime(m.getWaterLevelDate());
-                        wl.setFlowRate(m.getFlow() != null ? m.getFlow().floatValue() : null);
-                        wl.setFlowDate(m.getFlowDate());
-                        waterLevelRepo.save(wl);
+                Station station = stationRepo.findByName(dto.getStationName())
+                        .orElseGet(() -> {
+                            Station s = new Station();
+                            s.setName(dto.getStationName());
+                            s.setRiver(river);
+                            s.setVoivodeship(voivodeship);
+                            s.setLatitude(dto.getLat());
+                            s.setLongitude(dto.getLon());
+                            return stationRepo.save(s);
+                        });
+
+                for (HydroStationFullDto.MeasurementDto m : dto.getMeasurements()) {
+                    if (m.getWaterLevel() != null && m.getWaterLevelDate() != null) {
+                        boolean exists = waterLevelRepo.existsByStationAndTime(station, m.getWaterLevelDate());
+                        if (!exists) {
+                            WaterLevel wl = new WaterLevel();
+                            wl.setStation(station);
+                            wl.setLevel(m.getWaterLevel().floatValue());
+                            wl.setTime(m.getWaterLevelDate());
+                            wl.setFlowRate(m.getFlow() != null ? m.getFlow().floatValue() : null);
+                            wl.setFlowDate(m.getFlowDate());
+                            waterLevelRepo.save(wl);
+                        }
                     }
-                }
 
-                if (m.getTemperature() != null || m.getIcePhenomenon() != null || m.getOvergrownPhenomenon() != null) {
-                    boolean exists = otherMeasurementRepo.existsByStationAndWaterTempDateAndIcePhenomenaDateAndOvergrowthDate(
-                            station,
-                            m.getTemperatureDate(),
-                            m.getIcePhenomenonDate(),
-                            m.getOvergrownPhenomenonDate()
-                    );
-                    if (!exists) {
-                        OtherMeasurement om = new OtherMeasurement();
-                        om.setStation(station);
-                        om.setWaterTemp(m.getTemperature() != null ? m.getTemperature().floatValue() : null);
-                        om.setWaterTempDate(m.getTemperatureDate());
-                        om.setIcePhenomena(parseInt(m.getIcePhenomenon()));
-                        om.setIcePhenomenaDate(m.getIcePhenomenonDate());
-                        om.setOvergrowth(parseInt(m.getOvergrownPhenomenon()));
-                        om.setOvergrowthDate(m.getOvergrownPhenomenonDate());
-                        otherMeasurementRepo.save(om);
+                    if (m.getTemperature() != null || m.getIcePhenomenon() != null || m.getOvergrownPhenomenon() != null) {
+                        boolean exists = otherMeasurementRepo.existsByStationAndWaterTempDateAndIcePhenomenaDateAndOvergrowthDate(
+                                station,
+                                m.getTemperatureDate(),
+                                m.getIcePhenomenonDate(),
+                                m.getOvergrownPhenomenonDate()
+                        );
+                        if (!exists) {
+                            OtherMeasurement om = new OtherMeasurement();
+                            om.setStation(station);
+                            om.setWaterTemp(m.getTemperature() != null ? m.getTemperature().floatValue() : null);
+                            om.setWaterTempDate(m.getTemperatureDate());
+                            om.setIcePhenomena(parseInt(m.getIcePhenomenon()));
+                            om.setIcePhenomenaDate(m.getIcePhenomenonDate());
+                            om.setOvergrowth(parseInt(m.getOvergrownPhenomenon()));
+                            om.setOvergrowthDate(m.getOvergrownPhenomenonDate());
+                            otherMeasurementRepo.save(om);
+                        }
                     }
                 }
             }
+        } catch (Exception e) {
+            System.err.println("❌ Błąd podczas zapisu do bazy: " + e.getMessage());
+            e.printStackTrace();
         }
+
+        return CompletableFuture.completedFuture(null);
     }
 
     private Integer parseInt(String s) {
