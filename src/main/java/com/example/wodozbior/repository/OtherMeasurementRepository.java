@@ -15,6 +15,8 @@ public interface OtherMeasurementRepository extends JpaRepository<OtherMeasureme
     Optional<OtherMeasurement> findLatestByStationId(Integer stationId);
 
     List<OtherMeasurement> findAllByStationIdOrderByWaterTempDateAsc(Integer stationId);
+    List<OtherMeasurement> findByStationIdAndWaterTempDateBetween(Integer stationId, LocalDateTime start, LocalDateTime end);
+
 
     boolean existsByStationAndWaterTempDateAndIcePhenomenaDateAndOvergrowthDate(
             Station station,

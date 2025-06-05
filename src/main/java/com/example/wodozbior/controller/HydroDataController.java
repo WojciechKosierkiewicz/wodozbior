@@ -76,9 +76,15 @@ public class HydroDataController {
         return ResponseEntity.ok(alerts);
     }
 
-    @GetMapping("/rivers")
-    public ResponseEntity<List<Pair<String,List<StationBasicDto>>>> getRivers() {
-        List<Pair<String,List<StationBasicDto>>> rivers = hydroServiceFacade.getAllRivers();
-        return ResponseEntity.ok(rivers);
+    @GetMapping("/stations/related")
+    public ResponseEntity<List<StationBasicDto>> getStationsRelated(
+            @RequestParam(required = false) String stationId,
+            @RequestParam(required = false) Integer riverId,
+            @RequestParam(required = false) String riverName
+    ) {
+        List<StationBasicDto> stations = hydroServiceFacade.getStationsOnSameRiver(stationId, riverId, riverName);
+        return ResponseEntity.ok(stations);
     }
+
+
 }

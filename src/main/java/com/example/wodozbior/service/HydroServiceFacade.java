@@ -41,28 +41,31 @@ public class HydroServiceFacade {
         }
     }
 
-public List<StationMapDto> getAllStationsForMap() {
-    return dataService.getAllStationsForMap();
-}
+    public List<StationMapDto> getAllStationsForMap() {
+        return dataService.getAllStationsForMap();
+    }
 
-public List<Pair<String, List<StationBasicDto>>> getAllRivers() {
-    return dataService.getAllRivers();
-}
+//public List<Pair<String, List<StationBasicDto>>> getAllRivers() {
+//    return dataService.getAllRivers();
+//}
 
-public StationDetailsDto getStationById(String id) {
-    return dataService.getStationById(id);
-}
+    public StationDetailsDto getStationById(String id) {
+        return dataService.getStationById(id);
+    }
 
-public List<StationBasicDto> getAllStationsBasicInfo() {
-    return dataService.getAllStationsBasicInfo();
-}
+    public List<StationBasicDto> getAllStationsBasicInfo() {
+        return dataService.getAllStationsBasicInfo();
+    }
 
-public ChartDataDto getChartDataForStation(String id, String startDate, String endDate) {
-    return dataService.getChartDataForStation(id, startDate, endDate);
-}
+    public ChartDataDto getChartDataForStation(String id, String startDate, String endDate) {
+        return dataService.getChartDataForStation(id, startDate, endDate);
+    }
 
-public List<AlertDto> getCurrentAlerts() {
-    return dataService.getCurrentAlerts();
-}
+    public List<AlertDto> getCurrentAlerts() {
+        return dataService.getCurrentAlerts();
+    }
 
+    public List<StationBasicDto> getStationsOnSameRiver(String stationId, Integer riverId, String riverName) {
+        return dataService.getStationsOnSameRiver(stationId, riverId, riverName);
+    }
 }
