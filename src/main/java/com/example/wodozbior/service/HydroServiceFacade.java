@@ -1,29 +1,37 @@
 package com.example.wodozbior.service;
 
-
 import com.example.wodozbior.dto.hydrodata.*;
 import org.springframework.data.util.Pair;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
-public class HydroServiceFacade { // TODO implementacja są tylo placeholdery zeby nie wyjebało kompilacji
-    //  fasda powinna korzystac z serwisów ImgwHydro1Service i ImgwHydro2Service
-    //  w serwisach mozna sobie rozdzielić logikę na mniejsze kawałki np do pasowania jsona i z tego zroibc interfejs
-    // w reposiotry metody do komunikacji z baza danych hibernate/jpa/orm
-    //  w controllerze powinny być tylko endpointy i wywołania metod z fasady
-    //  w serwisach powinny być metody do obslugi logiki biznesowej
-    //  w repozytoriach powinny być metody do obslugi bazy danych
-    //  w dto powinny być klasy do przesyłania danych między warstwami
-    //  w utils cos gdzie nie pasuje nic
-    //  w configu jest  konfiguracja aplikacji i jesli cos blokuje enpointy to permitAll bedzie smigało
-    //  w enity klasy 1 do 1  jak w bazie
-    // appp properties mozna zmienic tworzenie bazy z create-drop na update i inne zminne jak url do api
-    //  i wtedy nie bedzie kasowało bazy przy kazdym uruchomieniu
-    //  TODO zmienne do env zanim ktoś wjebie na gita hasla application.properties zawsze do .gitignore
+@Service
+public class HydroServiceFacade {
 
+    private final HydroApiMergeService mergeService;
+    private final HydroDatabaseSaveService saveService;
+
+    public HydroServiceFacade(HydroApiMergeService mergeService,
+                              HydroDatabaseSaveService saveService) {
+        this.mergeService = mergeService;
+        this.saveService = saveService;
+    }
+
+    @Scheduled(fixedRate = 60_000) // co 60 sekund
+    public void fetchAndSaveData() {
+        try {
+            List<HydroStationFullDto> data = mergeService.fetchAndMerge();
+            saveService.saveAll(data);
+            System.out.println("✅ Dane hydrologiczne zostały pobrane i zapisane.");
+        } catch (Exception e) {
+            System.err.println("❌ Błąd podczas pobierania lub zapisywania danych: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
 
     public List<StationMapDto> getAllStationsForMap() {
@@ -34,10 +42,10 @@ public class HydroServiceFacade { // TODO implementacja są tylo placeholdery ze
         stationMapDtoList.add(s1);
         stationMapDtoList.add(s2);
         stationMapDtoList.add(s3);
-       return stationMapDtoList;
+        return stationMapDtoList;
     }
 
-    public List<Pair<String,List<StationBasicDto>>> getAllRivers(){
+    public List<Pair<String, List<StationBasicDto>>> getAllRivers() {
 
         List<Pair<String, List<StationBasicDto>>> rivers = new ArrayList<>();
         List<StationBasicDto> wislaStations = new ArrayList<>();
@@ -71,7 +79,7 @@ public class HydroServiceFacade { // TODO implementacja są tylo placeholdery ze
         stationDetailsDto.setOvergrowthPhenomenon("Brak");
         stationDetailsDto.setOvergrowthPhenomenonDate("2023-10-01T12:00:00Z");
 
-        return  stationDetailsDto;
+        return stationDetailsDto;
     }
 
     public List<StationBasicDto> getAllStationsBasicInfo() {
@@ -105,20 +113,20 @@ public class HydroServiceFacade { // TODO implementacja są tylo placeholdery ze
         ChartDataDto chartDataDto = new ChartDataDto();
         for (int i = 0; i < 10; i++) {
             MeasurementPointDto point = new MeasurementPointDto();
-            point.setDate("2023-10-0" + (i+1) + "T12:00:00Z");
-            point.setValue(200 + (int)(Math.random() * 100));
+            point.setDate("2023-10-0" + (i + 1) + "T12:00:00Z");
+            point.setValue(200 + (int) (Math.random() * 100));
             chartDataDto.getWaterLevel().add(point);
         }
         for (int i = 0; i < 10; i++) {
             MeasurementPointDto point = new MeasurementPointDto();
-            point.setDate("2023-10-0" + (i+1) + "T12:00:00Z");
-            point.setValue(200 + (int)(Math.random() * 100));
+            point.setDate("2023-10-0" + (i + 1) + "T12:00:00Z");
+            point.setValue(200 + (int) (Math.random() * 100));
             chartDataDto.getWaterTemperature().add(point);
         }
         for (int i = 0; i < 10; i++) {
             MeasurementPointDto point = new MeasurementPointDto();
-            point.setDate("2023-10-0" + (i+1) + "T12:00:00Z");
-            point.setValue(200 + (int)(Math.random() * 100));
+            point.setDate("2023-10-0" + (i + 1) + "T12:00:00Z");
+            point.setValue(200 + (int) (Math.random() * 100));
             chartDataDto.getWaterFlow().add(point);
         }
 
