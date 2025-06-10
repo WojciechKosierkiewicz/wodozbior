@@ -42,7 +42,7 @@ public class HydroDataService {
                 System.out.println("[DEBUG] Brak współrzędnych dla stacji: " + station.getName() + " (ID: " + station.getId() + ")");
             }
 
-            Optional<WaterLevel> optionalLevel = waterLevelRepository.findLatestByStationId(station.getId());
+            Optional<WaterLevel> optionalLevel = waterLevelRepository.findTopByStationIdOrderByTimeDesc(station.getId());
 
             if (optionalLevel.isPresent()) {
                 WaterLevel wl = optionalLevel.get();
@@ -66,7 +66,6 @@ public class HydroDataService {
         return result;
     }
 
-
     private String getColorForLevel(Float level) {
         if (level == null) return "#808080"; // szary — brak danych
         if (level < 100) return "#00FF00";   // zielony
@@ -77,6 +76,8 @@ public class HydroDataService {
     /**
      * Zwraca szczegółowe dane konkretnej stacji po ID.
      * Używane do wyświetlenia informacji o stacji po kliknięciu w nią na mapie lub liście.
+     *
+     * FIXED: Dodano try-catch dla handlera NonUniqueResultException
      */
     public StationDetailsDto getStationById(String id) {
         Optional<Station> optionalStation = stationRepository.findById(Integer.parseInt(id));
@@ -95,37 +96,74 @@ public class HydroDataService {
         dto.setLatitude(station.getLatitude() != null ? station.getLatitude() : 0.0);
         dto.setLongitude(station.getLongitude() != null ? station.getLongitude() : 0.0);
 
-        waterLevelRepository.findLatestByStationId(station.getId()).ifPresent(wl -> {
+        // Water level data
+        waterLevelRepository.findTopByStationIdOrderByTimeDesc(station.getId()).ifPresent(wl -> {
             dto.setWaterLevel(wl.getLevel() != null ? Math.round(wl.getLevel()) : null);
             dto.setWaterLevelDate(wl.getTime() != null ? wl.getTime().toString() : null);
         });
 
-        otherMeasurementRepository.findLatestByStationId(station.getId()).ifPresent(measurement -> {
-            Float temp = measurement.getWaterTemp();
-            dto.setWaterTemperature(temp != null ? temp.doubleValue() : null);
+        // Other measurements data - FIXED: Handle NonUniqueResultException
+        try {
+            Optional<OtherMeasurement> measurementOpt = otherMeasurementRepository.findLatestByStationId(station.getId());
+            if (measurementOpt.isPresent()) {
+                OtherMeasurement measurement = measurementOpt.get();
 
-            dto.setWaterTemperatureDate(measurement.getWaterTempDate() != null
-                    ? measurement.getWaterTempDate().toString()
-                    : null);
+                Float temp = measurement.getWaterTemp();
+                dto.setWaterTemperature(temp != null ? temp.doubleValue() : null);
 
-            dto.setIcePhenomenon(measurement.getIcePhenomena() != null
-                    ? String.valueOf(measurement.getIcePhenomena())
-                    : null);
-            dto.setIcePhenomenonDate(measurement.getIcePhenomenaDate() != null
-                    ? measurement.getIcePhenomenaDate().toString()
-                    : null);
+                dto.setWaterTemperatureDate(measurement.getWaterTempDate() != null
+                        ? measurement.getWaterTempDate().toString()
+                        : null);
 
-            dto.setOvergrowthPhenomenon(measurement.getOvergrowth() != null
-                    ? String.valueOf(measurement.getOvergrowth())
-                    : null);
-            dto.setOvergrowthPhenomenonDate(measurement.getOvergrowthDate() != null
-                    ? measurement.getOvergrowthDate().toString()
-                    : null);
-        });
+                dto.setIcePhenomenon(measurement.getIcePhenomena() != null
+                        ? String.valueOf(measurement.getIcePhenomena())
+                        : null);
+                dto.setIcePhenomenonDate(measurement.getIcePhenomenaDate() != null
+                        ? measurement.getIcePhenomenaDate().toString()
+                        : null);
+
+                dto.setOvergrowthPhenomenon(measurement.getOvergrowth() != null
+                        ? String.valueOf(measurement.getOvergrowth())
+                        : null);
+                dto.setOvergrowthPhenomenonDate(measurement.getOvergrowthDate() != null
+                        ? measurement.getOvergrowthDate().toString()
+                        : null);
+            }
+        } catch (org.springframework.dao.IncorrectResultSizeDataAccessException ex) {
+            // Log the issue and handle gracefully
+//            System.err.println("[ERROR] Multiple measurements found for station ID: " + station.getId() +
+//                             ". Using fallback approach to get the latest measurement.");
+
+            // Fallback: Get all measurements and manually select the latest one
+            List<OtherMeasurement> measurements = otherMeasurementRepository.findAllByStationIdOrderByDateDesc(station.getId());
+            if (!measurements.isEmpty()) {
+                OtherMeasurement measurement = measurements.get(0); // Get the first (latest) one
+
+                Float temp = measurement.getWaterTemp();
+                dto.setWaterTemperature(temp != null ? temp.doubleValue() : null);
+
+                dto.setWaterTemperatureDate(measurement.getWaterTempDate() != null
+                        ? measurement.getWaterTempDate().toString()
+                        : null);
+
+                dto.setIcePhenomenon(measurement.getIcePhenomena() != null
+                        ? String.valueOf(measurement.getIcePhenomena())
+                        : null);
+                dto.setIcePhenomenonDate(measurement.getIcePhenomenaDate() != null
+                        ? measurement.getIcePhenomenaDate().toString()
+                        : null);
+
+                dto.setOvergrowthPhenomenon(measurement.getOvergrowth() != null
+                        ? String.valueOf(measurement.getOvergrowth())
+                        : null);
+                dto.setOvergrowthPhenomenonDate(measurement.getOvergrowthDate() != null
+                        ? measurement.getOvergrowthDate().toString()
+                        : null);
+            }
+        }
 
         return dto;
     }
-
 
     public List<StationBasicDto> getAllStationsBasicInfo() {
         List<Station> stations = stationRepository.findAll();
@@ -138,7 +176,7 @@ public class HydroDataService {
             dto.setLatitude(station.getLatitude() != null ? station.getLatitude() : 0.0);
             dto.setLongitude(station.getLongitude() != null ? station.getLongitude() : 0.0);
 
-            Optional<WaterLevel> levelOpt = waterLevelRepository.findLatestByStationId(station.getId());
+            Optional<WaterLevel> levelOpt = waterLevelRepository.findTopByStationIdOrderByTimeDesc(station.getId());
             if (levelOpt.isPresent() && levelOpt.get().getLevel() != null) {
                 dto.setWaterLevel(String.valueOf(Math.round(levelOpt.get().getLevel())));
             } else {
@@ -151,14 +189,12 @@ public class HydroDataService {
         return result;
     }
 
-
     public ChartDataDto getChartDataForStation(String id, String startDate, String endDate) {
         int stationId = Integer.parseInt(id);
         LocalDateTime from = LocalDate.parse(startDate).atStartOfDay();
         LocalDateTime to = LocalDate.parse(endDate).atTime(23, 59, 59);
 
         List<MeasurementPointDto> levelPoints = waterLevelRepository
-
                 .findByStationIdAndTimeBetween(stationId, from, to)
                 .stream()
                 .filter(wl -> wl.getLevel() != null)
@@ -242,23 +278,20 @@ public class HydroDataService {
         return dto;
     }
 
-
     public List<RiverStationsDto> getAllRivers() {
-    List<River> rivers = riverRepository.findAll();
-    List<RiverStationsDto> result = new ArrayList<>();
+        List<River> rivers = riverRepository.findAll();
+        List<RiverStationsDto> result = new ArrayList<>();
 
-    for (River river : rivers) {
-        List<Station> stations = stationRepository.findByRiverId(river.getId());
-        List<StationBasicDto> stationDtos = stations.stream()
-                .map(this::toBasicDto)
-                .collect(Collectors.toList());
+        for (River river : rivers) {
+            List<Station> stations = stationRepository.findByRiverId(river.getId());
+            List<StationBasicDto> stationDtos = stations.stream()
+                    .map(this::toBasicDto)
+                    .collect(Collectors.toList());
 
-        RiverStationsDto dto = new RiverStationsDto(river.getId(), river.getName(), stationDtos);
-        result.add(dto);
+            RiverStationsDto dto = new RiverStationsDto(river.getId(), river.getName(), stationDtos);
+            result.add(dto);
+        }
+
+        return result;
     }
-
-    return result;
-}
-
-
 }

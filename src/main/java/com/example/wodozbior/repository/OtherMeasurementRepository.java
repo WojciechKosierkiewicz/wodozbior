@@ -4,6 +4,7 @@ import com.example.wodozbior.entity.OtherMeasurement;
 import com.example.wodozbior.entity.Station;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,6 +17,11 @@ public interface OtherMeasurementRepository extends JpaRepository<OtherMeasureme
 
     List<OtherMeasurement> findAllByStationIdOrderByWaterTempDateAsc(Integer stationId);
     List<OtherMeasurement> findByStationIdAndWaterTempDateBetween(Integer stationId, LocalDateTime start, LocalDateTime end);
+
+// Add this method to your OtherMeasurementRepository interface
+@Query("SELECT om FROM OtherMeasurement om WHERE om.station.id = :stationId ORDER BY " +
+       "COALESCE(om.waterTempDate, om.icePhenomenaDate, om.overgrowthDate) DESC")
+List<OtherMeasurement> findAllByStationIdOrderByDateDesc(@Param("stationId") Integer stationId);
 
 
     boolean existsByStationAndWaterTempDateAndIcePhenomenaDateAndOvergrowthDate(
