@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 public class StationMapDto { // dane do wyswietlenia na mapie
     private String id;
+    private String stationName;
     private String river;
     private double latitude;
     private double longitude;
@@ -26,6 +27,13 @@ public class StationMapDto { // dane do wyswietlenia na mapie
     public  StationMapDto() {
     }
 
+    public String getStationName() {
+        return stationName;
+    }
+
+    public void setStationName(String stationName) {
+        this.stationName = stationName;
+    }
 
     public String getId() {
         return id;

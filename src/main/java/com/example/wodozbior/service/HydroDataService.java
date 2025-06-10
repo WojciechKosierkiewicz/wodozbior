@@ -52,6 +52,7 @@ public class HydroDataService {
                 dto.setRiver(station.getRiver().getName());
                 dto.setLatitude(lat != null ? lat : 0.0);
                 dto.setLongitude(lon != null ? lon : 0.0);
+                dto.setStationName(station.getName());
 
                 Float level = wl.getLevel();
                 dto.setWaterLevel(level != null ? Math.round(level) : 0);
