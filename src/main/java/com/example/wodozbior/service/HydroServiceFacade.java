@@ -34,7 +34,7 @@ public class HydroServiceFacade {
         try {
             List<HydroStationFullDto> data = mergeService.fetchAndMerge();
             saveService.saveAllAsync(data);
-            System.out.println("✅ Dane hydrologiczne zostały pobrane i zapisane.");
+            //  System.out.println("✅ Dane hydrologiczne zostały pobrane i zapisane.");
         } catch (Exception e) {
             System.err.println("❌ Błąd podczas pobierania lub zapisywania danych: " + e.getMessage());
             e.printStackTrace();
@@ -67,5 +67,9 @@ public class HydroServiceFacade {
 
     public List<StationBasicDto> getStationsOnSameRiver(String stationId, Integer riverId, String riverName) {
         return dataService.getStationsOnSameRiver(stationId, riverId, riverName);
+    }
+
+    public List<RiverStationsDto> getAllRivers() {
+        return dataService.getAllRivers();
     }
 }

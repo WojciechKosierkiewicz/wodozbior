@@ -4,6 +4,7 @@ import com.example.wodozbior.dto.hydrodata.*;
 import com.example.wodozbior.entity.*;
 import com.example.wodozbior.repository.*;
 
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -239,6 +240,24 @@ public class HydroDataService {
         dto.setWaterLevel(null); // opcjonalnie: dodaj ostatni poziom z waterLevelRepository
         return dto;
     }
+
+
+    public List<RiverStationsDto> getAllRivers() {
+    List<River> rivers = riverRepository.findAll();
+    List<RiverStationsDto> result = new ArrayList<>();
+
+    for (River river : rivers) {
+        List<Station> stations = stationRepository.findByRiverId(river.getId());
+        List<StationBasicDto> stationDtos = stations.stream()
+                .map(this::toBasicDto)
+                .collect(Collectors.toList());
+
+        RiverStationsDto dto = new RiverStationsDto(river.getId(), river.getName(), stationDtos);
+        result.add(dto);
+    }
+
+    return result;
+}
 
 
 }

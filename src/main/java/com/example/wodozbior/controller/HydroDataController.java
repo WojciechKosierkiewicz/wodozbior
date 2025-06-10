@@ -87,4 +87,10 @@ public class HydroDataController {
     }
 
 
+   @GetMapping("/rivers")
+   public ResponseEntity<List<RiverStationsDto>> getAllRivers() {
+      List<RiverStationsDto> rivers = hydroServiceFacade.getAllRivers();
+       return ResponseEntity.ok(rivers);
+   }
+
 }
