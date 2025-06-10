@@ -44,9 +44,9 @@ public List<StationMapDto> getAllStationsForMap() {
         Float lat = station.getLatitude();
         Float lon = station.getLongitude();
 
-        if (lat == null || lon == null) {
-            System.out.println("[DEBUG] Brak współrzędnych dla stacji: " + station.getName() + " (ID: " + station.getId() + ")");
-        }
+       // if (lat == null || lon == null) {
+         //   System.out.println("[DEBUG] Brak współrzędnych dla stacji: " + station.getName() + " (ID: " + station.getId() + ")");
+      //  }
 
         Optional<WaterLevel> optionalLevel = waterLevelRepository.findTopByStationIdOrderByTimeDesc(station.getId());
 
