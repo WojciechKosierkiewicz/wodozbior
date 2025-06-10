@@ -7,8 +7,10 @@ import com.example.wodozbior.repository.*;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,48 +32,72 @@ public class HydroDataService {
         this.otherMeasurementRepository = otherMeasurementRepository;
     }
 
-    public List<StationMapDto> getAllStationsForMap() {
-        List<Station> stations = stationRepository.findAll();
-        List<StationMapDto> result = new ArrayList<>();
+public List<StationMapDto> getAllStationsForMap() {
+    List<Station> stations = stationRepository.findAll();
+    List<StationMapDto> result = new ArrayList<>();
 
-        for (Station station : stations) {
-            Float lat = station.getLatitude();
-            Float lon = station.getLongitude();
+    // Od razu liczmy startDate (10 dni wstecz)
+   LocalDateTime startDate = LocalDateTime.now().minusDays(10);
 
-            if (lat == null || lon == null) {
-                System.out.println("[DEBUG] Brak współrzędnych dla stacji: " + station.getName() + " (ID: " + station.getId() + ")");
-            }
 
-            Optional<WaterLevel> optionalLevel = waterLevelRepository.findTopByStationIdOrderByTimeDesc(station.getId());
+    for (Station station : stations) {
+        Float lat = station.getLatitude();
+        Float lon = station.getLongitude();
 
-            if (optionalLevel.isPresent()) {
-                WaterLevel wl = optionalLevel.get();
-
-                StationMapDto dto = new StationMapDto();
-                dto.setId(station.getId().toString());
-                dto.setRiver(station.getRiver().getName());
-                dto.setLatitude(lat != null ? lat : 0.0);
-                dto.setLongitude(lon != null ? lon : 0.0);
-                dto.setStationName(station.getName());
-
-                Float level = wl.getLevel();
-                dto.setWaterLevel(level != null ? Math.round(level) : 0);
-                dto.setMeasurementDate(wl.getTime() != null ? wl.getTime().toString() : null);
-                dto.setColor(getColorForLevel(level));
-
-                result.add(dto);
-            }
+        if (lat == null || lon == null) {
+            System.out.println("[DEBUG] Brak współrzędnych dla stacji: " + station.getName() + " (ID: " + station.getId() + ")");
         }
 
-        return result;
+        Optional<WaterLevel> optionalLevel = waterLevelRepository.findTopByStationIdOrderByTimeDesc(station.getId());
+
+        if (optionalLevel.isPresent()) {
+            WaterLevel wl = optionalLevel.get();
+
+            // Srednia z bazy z ostatnich 10 dni
+            Float avgLevel = waterLevelRepository.findAverageLevelForStationSince(station.getId(), startDate);
+
+            // Sprawdzam czy jest sens liczenia (żeby nie dzielić przez 0)
+            if (avgLevel == null || avgLevel == 0) {
+                avgLevel = 1f;
+            }
+
+            Float currentLevel = wl.getLevel();
+            Float deviationPercent = 0f;
+
+            if (currentLevel != null) {
+                // Liczymy różnicę procentową
+                deviationPercent = Math.abs(currentLevel - avgLevel) / avgLevel * 100;
+            }
+
+            // Wypełniamy DTO
+            StationMapDto dto = new StationMapDto();
+            dto.setId(station.getId().toString());
+            dto.setRiver(station.getRiver().getName());
+            dto.setLatitude(lat != null ? lat : 0.0);
+            dto.setLongitude(lon != null ? lon : 0.0);
+            dto.setStationName(station.getName());
+            dto.setWaterLevel(currentLevel != null ? Math.round(currentLevel) : 0);
+            dto.setMeasurementDate(wl.getTime() != null ? wl.getTime().toString() : null);
+            dto.setColor(getColorForDeviation(deviationPercent)); // USTAWIAMY KOLOR wg odchylenia %
+
+            result.add(dto);
+        }
     }
 
-    private String getColorForLevel(Float level) {
-        if (level == null) return "#808080"; // szary — brak danych
-        if (level < 100) return "#00FF00";   // zielony
-        if (level < 200) return "#FFFF00";   // żółty
-        return "#FF0000";                    // czerwony
+    return result;
+}
+
+private String getColorForDeviation(Float deviationPercent) {
+    if (deviationPercent <= 20.0) {
+        return "#00FF00"; // zielony
+    } else if (deviationPercent <= 40.0) {
+        return "#FFFF00"; // żółty
+    } else {
+        return "#FF0000"; // czerwony
     }
+}
+
+
 
     /**
      * Zwraca szczegółowe dane konkretnej stacji po ID.
