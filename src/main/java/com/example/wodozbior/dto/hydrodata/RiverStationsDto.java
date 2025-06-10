@@ -12,6 +12,9 @@ public class RiverStationsDto {
         this.name = name;
         this.stations = stations;
     }
+    public RiverStationsDto() {
+
+    }
 
     public int getId() {
         return id;

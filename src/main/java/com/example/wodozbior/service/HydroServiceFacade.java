@@ -45,9 +45,6 @@ public class HydroServiceFacade {
         return dataService.getAllStationsForMap();
     }
 
-//public List<Pair<String, List<StationBasicDto>>> getAllRivers() {
-//    return dataService.getAllRivers();
-//}
 
     public StationDetailsDto getStationById(String id) {
         return dataService.getStationById(id);
